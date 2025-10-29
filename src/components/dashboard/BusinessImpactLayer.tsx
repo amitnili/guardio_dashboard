@@ -43,7 +43,7 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
   const activationImpact = useMemo(() => {
     // Realistic numbers based on actual 96 activations
     const impacts: Record<string, { achieved: number; lost: number }> = {
-      '1h': { achieved: 4, lost: 1 },
+      '1h': { achieved: 87, lost: 9 },
       '24h': { achieved: 96, lost: 12 },
       '7d': { achieved: 672, lost: 84 },
       '30d': { achieved: 2880, lost: 360 }
@@ -77,17 +77,17 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
         severity: 'critical' as const,
         startIndex: Math.floor(count * 0.3),
         endIndex: Math.floor(count * 0.45),
-        activationsLost: timeRange === '1h' ? 1 : timeRange === '24h' ? 8 : timeRange === '7d' ? 56 : 240,
+        activationsLost: timeRange === '1h' ? 0 : timeRange === '24h' ? 8 : timeRange === '7d' ? 56 : 240,
         priority: 'P0'
       },
       {
         id: 'incident-2',
-        name: 'Phone Validation API Errors',
-        severity: 'warning' as const,
-        startIndex: Math.floor(count * 0.7),
-        endIndex: Math.floor(count * 0.8),
-        activationsLost: timeRange === '1h' ? 0 : timeRange === '24h' ? 3 : timeRange === '7d' ? 21 : 90,
-        priority: 'P1'
+        name: 'Phone Validation API Failure (~15%)',
+        severity: 'critical' as const,
+        startIndex: Math.floor(count * 0.85),
+        endIndex: count,
+        activationsLost: timeRange === '1h' ? 9 : timeRange === '24h' ? 3 : timeRange === '7d' ? 21 : 90,
+        priority: 'P0'
       },
       {
         id: 'incident-3',
@@ -161,13 +161,12 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
                       `Day ${inc.endIndex + 1}`;
 
       return {
-        severity: inc.severity === 'critical' ? 'Critical' : inc.severity === 'warning' ? 'Medium' : 'Low',
+        severity: inc.severity === 'critical' ? 'Critical' : 'Low',
         incidentType: inc.name,
         activationsLost: inc.activationsLost,
         priority: inc.priority,
         timeRange: `${startTime} – ${endTime}`,
-        color: inc.severity === 'critical' ? 'text-red-600' :
-               inc.severity === 'warning' ? 'text-orange-600' : 'text-yellow-600'
+        color: inc.severity === 'critical' ? 'text-red-600' : 'text-yellow-600'
       };
     });
   }, [incidents, timeRange]);
@@ -388,8 +387,7 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
 
                 if (!startPoint || !endPoint) return null;
 
-                const fillColor = incident.severity === 'critical' ? '#EF4444' :
-                                  incident.severity === 'warning' ? '#F97316' : '#F59E0B';
+                const fillColor = incident.severity === 'critical' ? '#EF4444' : '#F59E0B';
 
                 return (
                   <ReferenceArea

@@ -69,6 +69,6 @@ export const getFallbackFunnelData = (): FunnelStage[] => [
 export const getFallbackReliabilityMetrics = (): ReliabilityMetric[] => [
   { layer: "Client", metric: "User Response Success", target: "≥ 95%", current: 92.5, unit: "%", status: "warning" },
   { layer: "Server", metric: "Validation Request Success Rate", target: "≥ 98%", current: 96.5, unit: "%", status: "warning" },
-  { layer: "Provider", metric: "Phone Validation Error Rate", target: "< 5%", current: 7.2, unit: "%", status: "critical" },
+  { layer: "Provider", metric: "Phone Validation Error Rate", target: "< 3%", current: 15.0, unit: "%", status: "critical" },
   { layer: "Data Quality", metric: "Event Completeness & Accuracy", target: "≥ 99.5%", current: 99.8, unit: "%", status: "healthy" }
 ];

@@ -63,8 +63,8 @@ export const mockApi = {
         timestamp: new Date().toISOString(),
         layer: 'provider',
         metric_name: 'Phone Validation Error Rate',
-        target_value: '< 5%',
-        current_value: 7.2,
+        target_value: '< 3%',
+        current_value: 15.0,
         status: 'critical',
         unit: '%'
       },
@@ -103,9 +103,9 @@ export const mockApi = {
       },
       {
         id: 3,
-        message: "Provider returning rate-limit errors (HTTP 429)",
-        severity: "warning",
-        timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+        message: "Phone Validation API returning ~15% errors – critical",
+        severity: "critical",
+        timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
         related_layer: "provider",
         is_resolved: false
       },
@@ -139,11 +139,11 @@ export const mockApi = {
         lastOccurrence: new Date(Date.now() - 12 * 60 * 1000).toISOString()
       },
       {
-        message: "Provider rate-limit errors",
-        count: 22,
+        message: "Phone Validation API errors (~15%)",
+        count: 67,
         layer: "provider",
-        severity: "warning",
-        lastOccurrence: new Date(Date.now() - 28 * 60 * 1000).toISOString()
+        severity: "critical",
+        lastOccurrence: new Date(Date.now() - 3 * 60 * 1000).toISOString()
       },
       {
         message: "Event completeness degraded",
