@@ -45,7 +45,7 @@ type TimeRange = '1h' | '24h' | '7d' | '30d';
 
 interface DataPoint {
   time: string;
-  value: number;
+  value?: number;
   baseline?: number;
   success?: number;
   failed?: number;
@@ -408,7 +408,6 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
               fill="#EF4444"
               stroke="#FFF"
               strokeWidth={2}
-              isFront={true}
             />
           );
         })}
@@ -499,9 +498,8 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
                         {metric.current.toFixed(metric.unit === '%' ? 1 : 0)}{metric.unit}
                       </span>
                       <div className={`flex items-center gap-1 text-xs font-medium ${
-                        metric.trend === "up" && metric.status === "critical" ? "text-red-600" :
-                        metric.trend === "up" && metric.status === "healthy" ? "text-green-600" :
-                        metric.trend === "down" && metric.status === "healthy" ? "text-green-600" :
+                        metric.status === "critical" ? "text-red-600" :
+                        metric.status === "healthy" ? "text-green-600" :
                         "text-gray-500"
                       }`}>
                         {metric.trend === "up" && <TrendingUp className="w-3 h-3" />}
@@ -517,12 +515,10 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
                     variant="outline"
                     className={`${
                       metric.status === "healthy" ? "bg-green-50 text-green-700 border-green-200" :
-                      metric.status === "warning" ? "bg-orange-50 text-orange-700 border-orange-200" :
                       "bg-red-50 text-red-700 border-red-200"
                     } border font-medium text-xs`}
                   >
-                    {metric.status === "healthy" ? "✓ Healthy" :
-                     metric.status === "warning" ? "⚠ Warning" : "✗ Critical"}
+                    {metric.status === "healthy" ? "✓ Healthy" : "✗ Critical"}
                   </Badge>
                 </div>
 
