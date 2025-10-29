@@ -82,7 +82,7 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
       },
       {
         id: 'incident-2',
-        name: 'Phone Validation API Failure (~15%)',
+        name: 'Phone validation errors affecting user activations',
         severity: 'critical' as const,
         startIndex: Math.floor(count * 0.85),
         endIndex: count,
@@ -325,6 +325,11 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
                   <span className="font-medium">Potential Total: </span>
                   {activationImpact.total} activations
                 </div>
+                {timeRange === '1h' && activationImpact.lost > 0 && (
+                  <div className="text-xs text-red-600 mt-2 font-medium">
+                    Estimated {activationImpact.lost} activations lost due to validation errors in the past hour
+                  </div>
+                )}
               </div>
             </div>
           </div>

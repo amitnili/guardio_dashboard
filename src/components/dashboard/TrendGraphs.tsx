@@ -166,10 +166,10 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
       unit: "%",
       change: 2.5,
       trend: "down" as const,
-      status: "healthy" as const,
+      status: "critical" as const,
       data: validationErrorData,
-      color: "#10B981",
-      description: "Success vs Failed validation calls"
+      color: "#EF4444",
+      description: "Error rate spike detected in the last hour – approximately 15% of validation requests failed"
     },
     {
       id: 3,

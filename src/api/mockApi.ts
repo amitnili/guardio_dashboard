@@ -87,6 +87,14 @@ export const mockApi = {
     return [
       {
         id: 1,
+        message: "Phone validation is failing for about 15% of users (critical)",
+        severity: "critical",
+        timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+        related_layer: "provider",
+        is_resolved: false
+      },
+      {
+        id: 2,
         message: "Spike detected in Abandon Rate (+1.2% vs baseline)",
         severity: "critical",
         timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
@@ -94,19 +102,11 @@ export const mockApi = {
         is_resolved: false
       },
       {
-        id: 2,
+        id: 3,
         message: "Server response time exceeded SLA (1.05s > 0.8s)",
         severity: "critical",
         timestamp: new Date(Date.now() - 23 * 60 * 1000).toISOString(),
         related_layer: "server",
-        is_resolved: false
-      },
-      {
-        id: 3,
-        message: "Phone Validation API returning ~15% errors – critical",
-        severity: "critical",
-        timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-        related_layer: "provider",
         is_resolved: false
       },
       {
