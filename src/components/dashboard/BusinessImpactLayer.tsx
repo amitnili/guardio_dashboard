@@ -9,13 +9,13 @@
  * - Incident Impact Range table
  */
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingDown, TrendingUp, AlertTriangle, AlertCircle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -431,13 +431,13 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
                 strokeWidth={2.5}
                 dot={(props: any) => {
                   const point = activationsData[props.index];
-                  if (point?.isIncident) {
+                  if (point?.incident) {
                     return (
                       <circle
                         cx={props.cx}
                         cy={props.cy}
                         r={5}
-                        fill={point.incidentSeverity === 'critical' ? '#EF4444' : '#F97316'}
+                        fill={point.incident.severity === 'critical' ? '#EF4444' : '#F97316'}
                         stroke="#FFF"
                         strokeWidth={2}
                       />

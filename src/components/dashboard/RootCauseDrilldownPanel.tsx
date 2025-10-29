@@ -1,10 +1,10 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { X, ExternalLink, AlertTriangle, XCircle, Info, TrendingUp, Globe, Monitor, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, BarChart, Bar, Cell } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import type { Alert, RootCauseFactor, SegmentationData, LatencyDataPoint, LogEntry } from "@/types/dashboard";
 
 interface RootCauseDrilldownPanelProps {
@@ -112,9 +112,9 @@ Please investigate and resolve the root cause to restore normal service operatio
     // In a real implementation, this would call the Jira API
     // For now, we'll copy to clipboard and show an alert
     navigator.clipboard.writeText(jiraDescription).then(() => {
-      alert("Jira ticket details copied to clipboard!");
+      window.alert("Jira ticket details copied to clipboard!");
     }).catch(() => {
-      alert("Failed to copy ticket details. Please copy manually.");
+      window.alert("Failed to copy ticket details. Please copy manually.");
     });
   };
 

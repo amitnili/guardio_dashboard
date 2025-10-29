@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,6 @@ export default function Dashboard() {
 
   const {
     data: topErrors = [],
-    isLoading: topErrorsLoading,
     refetch: refetchTopErrors
   } = useQuery<TopError[]>({
     queryKey: ['topErrors'],
@@ -58,8 +57,7 @@ export default function Dashboard() {
 
   // Root cause drilldown data - only fetch when an alert is selected
   const {
-    data: rootCauseFactors = [],
-    isLoading: rootCauseLoading
+    data: rootCauseFactors = []
   } = useQuery<RootCauseFactor[]>({
     queryKey: ['rootCause', selectedAlert?.id],
     queryFn: () => mockApi.getRootCauseFactors(selectedAlert?.id || 1),
@@ -68,8 +66,7 @@ export default function Dashboard() {
   });
 
   const {
-    data: segmentation,
-    isLoading: segmentationLoading
+    data: segmentation
   } = useQuery<SegmentationData>({
     queryKey: ['segmentation', selectedAlert?.id],
     queryFn: () => mockApi.getSegmentation(selectedAlert?.id || 1),
@@ -78,8 +75,7 @@ export default function Dashboard() {
   });
 
   const {
-    data: latencyData = [],
-    isLoading: latencyLoading
+    data: latencyData = []
   } = useQuery<LatencyDataPoint[]>({
     queryKey: ['latency', selectedAlert?.id],
     queryFn: () => mockApi.getLatencyData(selectedAlert?.id || 1, '24h'),
@@ -88,8 +84,7 @@ export default function Dashboard() {
   });
 
   const {
-    data: logs = [],
-    isLoading: logsLoading
+    data: logs = []
   } = useQuery<LogEntry[]>({
     queryKey: ['logs', selectedAlert?.id],
     queryFn: () => mockApi.getLogs(selectedAlert?.id || 1),
@@ -122,8 +117,8 @@ export default function Dashboard() {
   }, [autoRefresh]);
 
   // Transform data for components
-  const funnelData = React.useMemo(() => transformFunnelData(metrics), [metrics]);
-  const reliabilityData = React.useMemo(() => transformReliabilityMetrics(metrics), [metrics]);
+  const funnelData = useMemo(() => transformFunnelData(metrics), [metrics]);
+  const reliabilityData = useMemo(() => transformReliabilityMetrics(metrics), [metrics]);
 
   const hasErrors = alertsError || metricsError;
 

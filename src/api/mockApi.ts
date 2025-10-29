@@ -257,7 +257,7 @@ export const mockApi = {
     return rootCauses[alertId] || rootCauses[1];
   },
 
-  getSegmentation: async (alertId: number): Promise<SegmentationData> => {
+  getSegmentation: async (_alertId: number): Promise<SegmentationData> => {
     await new Promise(resolve => setTimeout(resolve, 250));
 
     return {
@@ -282,7 +282,7 @@ export const mockApi = {
     };
   },
 
-  getLatencyData: async (alertId: number, timeRange: string): Promise<LatencyDataPoint[]> => {
+  getLatencyData: async (_alertId: number, timeRange: string): Promise<LatencyDataPoint[]> => {
     await new Promise(resolve => setTimeout(resolve, 250));
 
     const points: Record<string, number> = { '1h': 12, '24h': 24, '7d': 7, '30d': 30 };
@@ -313,7 +313,7 @@ export const mockApi = {
     });
   },
 
-  getLogs: async (alertId: number): Promise<LogEntry[]> => {
+  getLogs: async (_alertId: number): Promise<LogEntry[]> => {
     await new Promise(resolve => setTimeout(resolve, 200));
 
     const now = Date.now();
