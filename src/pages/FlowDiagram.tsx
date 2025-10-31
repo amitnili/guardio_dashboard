@@ -41,7 +41,10 @@ export default function FlowDiagram() {
     flowchart TD
       Start([User Lands on Phone Collection Page]):::entryNode
 
-      Start --> InputPhone[User Enters Phone Number]:::normalNode
+      Start --> UserChoice{User Action}:::decisionNode
+
+      UserChoice -->|Enter Phone Number| InputPhone[User Enters Phone Number]:::normalNode
+      UserChoice -->|Skip| FirstSkip[First Skip - Show Prompt]:::infoNode
 
       InputPhone --> ValidateFormat{Valid Format?}:::decisionNode
 
@@ -73,18 +76,17 @@ export default function FlowDiagram() {
 
       Success --> NextPage[Proceed to Next Page]:::successNode
 
-      InputPhone --> UserCancel{User Cancels?}:::decisionNode
-      UserCancel -->|Yes| Abort
-      UserCancel -->|No| InputPhone
+      FirstSkip --> SecondChoice{User Action on Prompt}:::decisionNode
+      SecondChoice -->|Enter Phone Number| InputPhone
+      SecondChoice -->|Skip Again| SecondSkip[Second Skip Detected]:::infoNode
 
-      InputPhone --> SkipOption{Skip Verification?}:::decisionNode
-      SkipOption -->|Continue Without| PendingState[Mark as Pending Verification]:::infoNode
-      SkipOption -->|No| InputPhone
+      SecondSkip --> ContinueWithout[Continue Onboarding Without Phone]:::infoNode
+      ContinueWithout --> NextPage
 
-      PendingState --> NextPage
       NextPage --> Activation([User Activation Complete]):::successNode
 
       Abort --> End([Session Ended]):::errorNode
+      RedirectLogin --> End
 
       classDef entryNode fill:#DBEAFE,stroke:#3B82F6,stroke-width:3px,color:#1E40AF
       classDef successNode fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46
@@ -125,7 +127,7 @@ export default function FlowDiagram() {
               User Flow Diagram
             </CardTitle>
             <p className="text-sm text-gray-600 mt-2">
-              Visual representation of all user states, validation checks, and error handling
+              Visual representation of all user states, validation checks, and skip logic. Users can skip phone entry twice before continuing without verification.
             </p>
           </CardHeader>
           <CardContent className="p-8">
