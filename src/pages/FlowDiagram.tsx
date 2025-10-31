@@ -49,7 +49,7 @@ export default function FlowDiagram() {
       InputPhone --> ValidateFormat{Valid Format?}:::decisionNode
 
       ValidateFormat -->|Yes| SubmitToServer[Submit to Server]:::normalNode
-      ValidateFormat -->|No| InlineError[Show Inline Error Message]:::warningNode
+      ValidateFormat -->|No| InlineError[Show error: Incorrect Phone, try again]:::warningNode
 
       InlineError --> InputPhone
 
