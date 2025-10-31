@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { RefreshCw, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 
@@ -17,6 +18,7 @@ import { mockApi } from "../api/mockApi";
 import type { Alert, FunnelMetrics, TopError, RootCauseFactor, SegmentationData, LatencyDataPoint, LogEntry } from "../types/dashboard";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
@@ -206,6 +208,19 @@ export default function Dashboard() {
           alerts={alerts}
           lastUpdated={lastUpdated}
         />
+
+        {/* Flow Diagram Button */}
+        <div className="flex justify-center">
+          <Button
+            onClick={() => navigate('/flow-diagram')}
+            variant="outline"
+            size="lg"
+            className="gap-2 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-blue-500 transition-all shadow-sm"
+          >
+            <Workflow className="w-5 h-5 text-blue-600" />
+            <span className="font-semibold">View Flow Diagram</span>
+          </Button>
+        </div>
       </div>
 
       {/* Root Cause Drilldown Panel */}
