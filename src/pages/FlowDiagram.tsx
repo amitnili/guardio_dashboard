@@ -10,8 +10,8 @@ export default function FlowDiagram() {
   const mermaidRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Zoom and Pan state - Start at 65% for full diagram visibility
-  const [zoom, setZoom] = useState(65);
+  // Zoom and Pan state - Start at 50% for full diagram visibility without scrolling
+  const [zoom, setZoom] = useState(50);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -30,16 +30,17 @@ export default function FlowDiagram() {
         noteBkgColor: "#FEF3C7",
         noteTextColor: "#92400E",
         noteBorderColor: "#F59E0B",
-        fontSize: "14px",
+        fontSize: "15px",
         fontFamily: "ui-sans-serif, system-ui, sans-serif",
       },
       flowchart: {
         useMaxWidth: false,
         htmlLabels: true,
         curve: "basis",
-        padding: 20,
-        nodeSpacing: 100,
-        rankSpacing: 100,
+        padding: 40,
+        nodeSpacing: 120,
+        rankSpacing: 120,
+        wrappingWidth: 280,
       },
     });
 
@@ -118,12 +119,12 @@ export default function FlowDiagram() {
   };
 
   const handleResetZoom = () => {
-    setZoom(65);
+    setZoom(50);
     setPan({ x: 0, y: 0 });
   };
 
   const handleFitToScreen = () => {
-    setZoom(65);
+    setZoom(50);
     setPan({ x: 0, y: 0 });
   };
 
@@ -152,12 +153,12 @@ export default function FlowDiagram() {
   return (
     <>
       <style>{`
-        /* Clean Mermaid Diagram Styling */
+        /* Clean Mermaid Diagram Styling with Text Wrapping */
         .mermaid .edgeLabel {
           background-color: transparent !important;
           padding: 4px 8px !important;
           border-radius: 4px !important;
-          font-size: 13px !important;
+          font-size: 14px !important;
           font-weight: 600 !important;
           color: #222222 !important;
           box-shadow: none !important;
@@ -179,14 +180,32 @@ export default function FlowDiagram() {
         }
 
         .mermaid .label {
-          font-size: 13px !important;
+          font-size: 15px !important;
           font-weight: 600 !important;
           color: #111827 !important;
+          white-space: normal !important;
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
+          max-width: 280px !important;
+          line-height: 1.4 !important;
+        }
+
+        .mermaid .nodeLabel {
+          white-space: normal !important;
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
+          text-overflow: clip !important;
         }
 
         .mermaid .cluster rect {
           rx: 8px !important;
           ry: 8px !important;
+        }
+
+        /* Ensure nodes expand to fit text */
+        .mermaid svg {
+          max-width: 100% !important;
+          height: auto !important;
         }
       `}</style>
       <div className="min-h-screen bg-[#F9FAFB] p-6">
@@ -253,7 +272,7 @@ export default function FlowDiagram() {
               User Flow Diagram
             </CardTitle>
             <p className="text-sm text-gray-600 mt-2">
-              Complete flow optimized for full visibility at default zoom. Use controls to zoom in for details or drag to pan across the diagram.
+              Complete user journey visible at a glance. Zoom in for details or drag to navigate — no scrolling required.
             </p>
           </CardHeader>
           <CardContent className="p-0">
@@ -261,7 +280,7 @@ export default function FlowDiagram() {
               ref={containerRef}
               className="bg-white rounded-lg overflow-hidden relative"
               style={{
-                height: "800px",
+                height: "1000px",
                 cursor: isDragging ? "grabbing" : "grab",
               }}
               onMouseDown={handleMouseDown}
@@ -291,47 +310,6 @@ export default function FlowDiagram() {
                 >
                   {flowchartDefinition}
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Legend */}
-        <Card className="shadow-sm border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              Legend
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-500" />
-                <span className="text-sm text-gray-700">Entry Point</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-green-100 border-2 border-green-500" />
-                <span className="text-sm text-gray-700">Success State</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-red-100 border-2 border-red-500" />
-                <span className="text-sm text-gray-700">Error State</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-orange-100 border-2 border-orange-500" />
-                <span className="text-sm text-gray-700">Warning / Conflict</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-gray-100 border-2 border-gray-400" />
-                <span className="text-sm text-gray-700">Normal State</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-sm bg-yellow-50 border-2 border-yellow-500" />
-                <span className="text-sm text-gray-700">Decision Point</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-blue-50 border-2 border-blue-400" />
-                <span className="text-sm text-gray-700">Informational</span>
               </div>
             </div>
           </CardContent>
