@@ -285,9 +285,6 @@ export default function FlowDiagram() {
             <CardTitle className="text-xl font-semibold text-gray-900">
               User Flow Diagram
             </CardTitle>
-            <p className="text-sm text-gray-600 mt-2">
-              Optimized for readability at 100% baseline. Drag to navigate, zoom controls available — no scrollbars.
-            </p>
           </CardHeader>
           <CardContent className="p-0">
             <div
@@ -330,13 +327,6 @@ export default function FlowDiagram() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-500 py-4">
-          <p>
-            Last updated: {new Date().toLocaleDateString()} • For internal review and stakeholder presentation
-          </p>
-        </div>
         </div>
       </div>
     </>
