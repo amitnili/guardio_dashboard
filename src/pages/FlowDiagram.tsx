@@ -10,8 +10,8 @@ export default function FlowDiagram() {
   const mermaidRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Zoom and Pan state - Start at 125% for immediate readability
-  const [zoom, setZoom] = useState(125);
+  // Zoom and Pan state - Start at 180% for large, readable flow (MIRO-style)
+  const [zoom, setZoom] = useState(180);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -119,12 +119,12 @@ export default function FlowDiagram() {
   };
 
   const handleResetZoom = () => {
-    setZoom(125);
+    setZoom(180);
     setPan({ x: 0, y: 0 });
   };
 
   const handleFitToScreen = () => {
-    setZoom(125);
+    setZoom(180);
     setPan({ x: 0, y: 0 });
   };
 
@@ -153,16 +153,20 @@ export default function FlowDiagram() {
   return (
     <>
       <style>{`
-        /* Optimized Mermaid Diagram Styling */
+        /* Optimized Mermaid Diagram Styling - Sharp at 180% zoom */
         .mermaid {
           display: flex !important;
           justify-content: center !important;
           align-items: flex-start !important;
+          -webkit-font-smoothing: antialiased !important;
+          -moz-osx-font-smoothing: grayscale !important;
+          text-rendering: optimizeLegibility !important;
         }
 
         .mermaid svg {
           max-width: 100% !important;
           height: auto !important;
+          shape-rendering: geometricPrecision !important;
         }
 
         .mermaid .edgeLabel {
@@ -180,6 +184,7 @@ export default function FlowDiagram() {
 
         .mermaid .edgePath path {
           stroke-width: 2px !important;
+          vector-effect: non-scaling-stroke !important;
         }
 
         .mermaid .node rect,
@@ -194,6 +199,7 @@ export default function FlowDiagram() {
           font-size: 16px !important;
           font-weight: 600 !important;
           color: #111827 !important;
+          -webkit-font-smoothing: antialiased !important;
         }
 
         .mermaid .nodeLabel {
@@ -270,13 +276,13 @@ export default function FlowDiagram() {
               User Flow Diagram
             </CardTitle>
             <p className="text-sm text-gray-600 mt-2">
-              Optimized for immediate readability at 125% zoom. Zoom out to see the full flow, or zoom in for more detail.
+              Large and readable at 180% zoom. Drag to navigate, zoom in/out as needed — no scrollbars.
             </p>
           </CardHeader>
           <CardContent className="p-0">
             <div
               ref={containerRef}
-              className="bg-white rounded-lg overflow-auto relative"
+              className="bg-white rounded-lg overflow-hidden relative"
               style={{
                 height: "calc(100vh - 280px)",
                 minHeight: "800px",
