@@ -10,8 +10,8 @@ export default function FlowDiagram() {
   const mermaidRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Zoom and Pan state - Start at 85% for optimal readability
-  const [zoom, setZoom] = useState(85);
+  // Zoom and Pan state - Start at 125% for immediate readability
+  const [zoom, setZoom] = useState(125);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -119,12 +119,12 @@ export default function FlowDiagram() {
   };
 
   const handleResetZoom = () => {
-    setZoom(85);
+    setZoom(125);
     setPan({ x: 0, y: 0 });
   };
 
   const handleFitToScreen = () => {
-    setZoom(85);
+    setZoom(125);
     setPan({ x: 0, y: 0 });
   };
 
@@ -270,7 +270,7 @@ export default function FlowDiagram() {
               User Flow Diagram
             </CardTitle>
             <p className="text-sm text-gray-600 mt-2">
-              Centered and optimized for immediate readability. Use zoom controls or drag to navigate as needed.
+              Optimized for immediate readability at 125% zoom. Zoom out to see the full flow, or zoom in for more detail.
             </p>
           </CardHeader>
           <CardContent className="p-0">
