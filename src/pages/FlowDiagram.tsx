@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Plus, Minus, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import mermaid from "mermaid";
@@ -10,8 +10,8 @@ export default function FlowDiagram() {
   const mermaidRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Zoom and Pan state
-  const [zoom, setZoom] = useState(100);
+  // Zoom and Pan state - Start at 65% for full diagram visibility
+  const [zoom, setZoom] = useState(65);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -30,16 +30,16 @@ export default function FlowDiagram() {
         noteBkgColor: "#FEF3C7",
         noteTextColor: "#92400E",
         noteBorderColor: "#F59E0B",
-        fontSize: "18px",
+        fontSize: "14px",
         fontFamily: "ui-sans-serif, system-ui, sans-serif",
       },
       flowchart: {
         useMaxWidth: false,
         htmlLabels: true,
         curve: "basis",
-        padding: 30,
-        nodeSpacing: 80,
-        rankSpacing: 80,
+        padding: 20,
+        nodeSpacing: 100,
+        rankSpacing: 100,
       },
     });
 
@@ -118,7 +118,12 @@ export default function FlowDiagram() {
   };
 
   const handleResetZoom = () => {
-    setZoom(100);
+    setZoom(65);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const handleFitToScreen = () => {
+    setZoom(65);
     setPan({ x: 0, y: 0 });
   };
 
@@ -147,39 +152,41 @@ export default function FlowDiagram() {
   return (
     <>
       <style>{`
-        /* Enhanced Mermaid Diagram Styling */
+        /* Clean Mermaid Diagram Styling */
         .mermaid .edgeLabel {
-          background-color: rgba(255, 255, 255, 0.95) !important;
-          padding: 6px 12px !important;
-          border-radius: 6px !important;
-          font-size: 16px !important;
+          background-color: transparent !important;
+          padding: 4px 8px !important;
+          border-radius: 4px !important;
+          font-size: 13px !important;
           font-weight: 600 !important;
-          color: #374151 !important;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-          border: 1px solid #E5E7EB !important;
+          color: #222222 !important;
+          box-shadow: none !important;
+          border: none !important;
+          text-shadow: 0 0 8px rgba(255, 255, 255, 0.9),
+                       0 0 4px rgba(255, 255, 255, 0.8) !important;
         }
 
         .mermaid .edgePath path {
-          stroke-width: 2.5px !important;
+          stroke-width: 1.5px !important;
         }
 
         .mermaid .node rect,
         .mermaid .node circle,
         .mermaid .node polygon {
-          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-          rx: 8px !important;
-          ry: 8px !important;
+          filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.12));
+          rx: 6px !important;
+          ry: 6px !important;
         }
 
         .mermaid .label {
-          font-size: 16px !important;
+          font-size: 13px !important;
           font-weight: 600 !important;
           color: #111827 !important;
         }
 
         .mermaid .cluster rect {
-          rx: 12px !important;
-          ry: 12px !important;
+          rx: 8px !important;
+          ry: 8px !important;
         }
       `}</style>
       <div className="min-h-screen bg-[#F9FAFB] p-6">
@@ -209,6 +216,14 @@ export default function FlowDiagram() {
           {/* Zoom Controls - Fixed Top Right */}
           <div className="absolute top-6 right-6 z-10 flex items-center gap-2 bg-white border border-gray-300 rounded-lg shadow-lg px-3 py-2">
             <button
+              onClick={handleFitToScreen}
+              className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 transition-colors"
+              title="Fit to Screen"
+            >
+              <Maximize2 className="w-4 h-4 text-gray-700" />
+            </button>
+            <div className="w-px h-6 bg-gray-300" />
+            <button
               onClick={handleZoomOut}
               disabled={zoom <= 50}
               className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -219,7 +234,7 @@ export default function FlowDiagram() {
             <button
               onClick={handleResetZoom}
               className="px-3 py-1 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded transition-colors"
-              title="Reset Zoom & Pan"
+              title="Reset View"
             >
               {zoom}%
             </button>
@@ -238,7 +253,7 @@ export default function FlowDiagram() {
               User Flow Diagram
             </CardTitle>
             <p className="text-sm text-gray-600 mt-2">
-              Visual representation of all user states, validation checks, and skip logic. Use zoom controls or drag to navigate.
+              Complete flow optimized for full visibility at default zoom. Use controls to zoom in for details or drag to pan across the diagram.
             </p>
           </CardHeader>
           <CardContent className="p-0">
