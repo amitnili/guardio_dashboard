@@ -10,8 +10,8 @@ export default function FlowDiagram() {
   const mermaidRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Zoom and Pan state - Start at 50% for full diagram visibility without scrolling
-  const [zoom, setZoom] = useState(50);
+  // Zoom and Pan state - Start at 85% for optimal readability
+  const [zoom, setZoom] = useState(85);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -30,17 +30,17 @@ export default function FlowDiagram() {
         noteBkgColor: "#FEF3C7",
         noteTextColor: "#92400E",
         noteBorderColor: "#F59E0B",
-        fontSize: "15px",
+        fontSize: "16px",
         fontFamily: "ui-sans-serif, system-ui, sans-serif",
       },
       flowchart: {
-        useMaxWidth: false,
+        useMaxWidth: true,
         htmlLabels: true,
         curve: "basis",
-        padding: 40,
-        nodeSpacing: 120,
-        rankSpacing: 120,
-        wrappingWidth: 280,
+        padding: 30,
+        nodeSpacing: 80,
+        rankSpacing: 90,
+        wrappingWidth: 300,
       },
     });
 
@@ -119,12 +119,12 @@ export default function FlowDiagram() {
   };
 
   const handleResetZoom = () => {
-    setZoom(50);
+    setZoom(85);
     setPan({ x: 0, y: 0 });
   };
 
   const handleFitToScreen = () => {
-    setZoom(50);
+    setZoom(85);
     setPan({ x: 0, y: 0 });
   };
 
@@ -153,12 +153,23 @@ export default function FlowDiagram() {
   return (
     <>
       <style>{`
-        /* Clean Mermaid Diagram Styling with Text Wrapping */
+        /* Optimized Mermaid Diagram Styling */
+        .mermaid {
+          display: flex !important;
+          justify-content: center !important;
+          align-items: flex-start !important;
+        }
+
+        .mermaid svg {
+          max-width: 100% !important;
+          height: auto !important;
+        }
+
         .mermaid .edgeLabel {
           background-color: transparent !important;
           padding: 4px 8px !important;
           border-radius: 4px !important;
-          font-size: 14px !important;
+          font-size: 15px !important;
           font-weight: 600 !important;
           color: #222222 !important;
           box-shadow: none !important;
@@ -168,44 +179,31 @@ export default function FlowDiagram() {
         }
 
         .mermaid .edgePath path {
-          stroke-width: 1.5px !important;
+          stroke-width: 2px !important;
         }
 
         .mermaid .node rect,
         .mermaid .node circle,
         .mermaid .node polygon {
-          filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.12));
-          rx: 6px !important;
-          ry: 6px !important;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+          rx: 8px !important;
+          ry: 8px !important;
         }
 
         .mermaid .label {
-          font-size: 15px !important;
+          font-size: 16px !important;
           font-weight: 600 !important;
           color: #111827 !important;
-          white-space: normal !important;
-          word-wrap: break-word !important;
-          overflow-wrap: break-word !important;
-          max-width: 280px !important;
-          line-height: 1.4 !important;
         }
 
         .mermaid .nodeLabel {
-          white-space: normal !important;
-          word-wrap: break-word !important;
-          overflow-wrap: break-word !important;
-          text-overflow: clip !important;
+          padding: 8px 12px !important;
+          line-height: 1.5 !important;
         }
 
         .mermaid .cluster rect {
           rx: 8px !important;
           ry: 8px !important;
-        }
-
-        /* Ensure nodes expand to fit text */
-        .mermaid svg {
-          max-width: 100% !important;
-          height: auto !important;
         }
       `}</style>
       <div className="min-h-screen bg-[#F9FAFB] p-6">
@@ -272,15 +270,16 @@ export default function FlowDiagram() {
               User Flow Diagram
             </CardTitle>
             <p className="text-sm text-gray-600 mt-2">
-              Complete user journey visible at a glance. Zoom in for details or drag to navigate — no scrolling required.
+              Centered and optimized for immediate readability. Use zoom controls or drag to navigate as needed.
             </p>
           </CardHeader>
           <CardContent className="p-0">
             <div
               ref={containerRef}
-              className="bg-white rounded-lg overflow-hidden relative"
+              className="bg-white rounded-lg overflow-auto relative"
               style={{
-                height: "1000px",
+                height: "calc(100vh - 280px)",
+                minHeight: "800px",
                 cursor: isDragging ? "grabbing" : "grab",
               }}
               onMouseDown={handleMouseDown}
@@ -291,13 +290,14 @@ export default function FlowDiagram() {
               <div
                 style={{
                   transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom / 100})`,
-                  transformOrigin: "center center",
+                  transformOrigin: "top center",
                   transition: isDragging ? "none" : "transform 0.2s ease-out",
                   width: "100%",
                   minHeight: "100%",
                   display: "flex",
-                  alignItems: "center",
+                  alignItems: "flex-start",
                   justifyContent: "center",
+                  paddingTop: "30px",
                 }}
               >
                 <div
@@ -305,7 +305,7 @@ export default function FlowDiagram() {
                   className="mermaid"
                   style={{
                     textAlign: "center",
-                    padding: "40px",
+                    padding: "20px",
                   }}
                 >
                   {flowchartDefinition}
