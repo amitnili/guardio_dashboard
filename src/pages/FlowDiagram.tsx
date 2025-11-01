@@ -1,332 +1,450 @@
-import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Minus, Maximize2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import mermaid from "mermaid";
+import {
+  ReactFlow,
+  Background,
+  MiniMap,
+  useNodesState,
+  useEdgesState,
+  Node,
+  Edge,
+  MarkerType,
+  Handle,
+  Position,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+
+// Custom Node Component with flowchart shapes
+function CustomNode({ data }: { data: { label: string; nodeType: string; flowchartShape?: string } }) {
+  const nodeStyles: Record<string, { bg: string; border: string; text: string }> = {
+    entry: { bg: "#DBEAFE", border: "#3B82F6", text: "#1E40AF" },
+    success: { bg: "#D1FAE5", border: "#10B981", text: "#065F46" },
+    error: { bg: "#FEE2E2", border: "#EF4444", text: "#991B1B" },
+    warning: { bg: "#FED7AA", border: "#F59E0B", text: "#92400E" },
+    info: { bg: "#DBEAFE", border: "#3B82F6", text: "#1E40AF" },
+    normal: { bg: "#F3F4F6", border: "#9CA3AF", text: "#374151" },
+    decision: { bg: "#FEF3C7", border: "#F59E0B", text: "#92400E" },
+    retry: { bg: "#BFDBFE", border: "#2563EB", text: "#1E3A8A" },
+    fallback: { bg: "#E9D5FF", border: "#9333EA", text: "#581C87" },
+    uxFallback: { bg: "#BBF7D0", border: "#16A34A", text: "#14532D" },
+  };
+
+  const style = nodeStyles[data.nodeType] || nodeStyles.normal;
+  const shape = data.flowchartShape || "rectangle";
+
+  // Diamond shape for decisions
+  if (shape === "diamond") {
+    return (
+      <div style={{ position: "relative", width: "180px", height: "120px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Handle type="target" position={Position.Top} style={{ background: '#555' }} />
+        <Handle type="source" position={Position.Bottom} style={{ background: '#555' }} />
+        <Handle type="target" position={Position.Left} style={{ background: '#555' }} />
+        <Handle type="source" position={Position.Right} style={{ background: '#555' }} />
+        <svg width="180" height="120" style={{ position: "absolute", top: 0, left: 0 }}>
+          <polygon
+            points="90,5 175,60 90,115 5,60"
+            fill={style.bg}
+            stroke={style.border}
+            strokeWidth="3"
+            filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
+          />
+        </svg>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            color: style.text,
+            fontWeight: 600,
+            fontSize: "14px",
+            lineHeight: "1.4",
+            textAlign: "center",
+            padding: "0 20px",
+            maxWidth: "140px",
+            wordWrap: "break-word",
+          }}
+        >
+          {data.label}
+        </div>
+      </div>
+    );
+  }
+
+  // Oval shape for start/end
+  if (shape === "oval") {
+    return (
+      <div
+        style={{
+          background: style.bg,
+          border: `3px solid ${style.border}`,
+          borderRadius: "50px",
+          padding: "14px 24px",
+          minWidth: "180px",
+          maxWidth: "300px",
+          color: style.text,
+          fontWeight: 600,
+          fontSize: "14px",
+          lineHeight: "1.4",
+          textAlign: "center",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          wordWrap: "break-word",
+          position: "relative",
+        }}
+      >
+        <Handle type="target" position={Position.Top} style={{ background: '#555' }} />
+        <Handle type="source" position={Position.Bottom} style={{ background: '#555' }} />
+        <Handle type="target" position={Position.Left} style={{ background: '#555' }} />
+        <Handle type="source" position={Position.Right} style={{ background: '#555' }} />
+        {data.label}
+      </div>
+    );
+  }
+
+  // Parallelogram shape for user inputs
+  if (shape === "parallelogram") {
+    return (
+      <div style={{ position: "relative", width: "220px", height: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Handle type="target" position={Position.Top} style={{ background: '#555' }} />
+        <Handle type="source" position={Position.Bottom} style={{ background: '#555' }} />
+        <Handle type="target" position={Position.Left} style={{ background: '#555' }} />
+        <Handle type="source" position={Position.Right} style={{ background: '#555' }} />
+        <svg width="220" height="80" style={{ position: "absolute", top: 0, left: 0 }}>
+          <polygon
+            points="20,5 210,5 200,75 10,75"
+            fill={style.bg}
+            stroke={style.border}
+            strokeWidth="3"
+            filter="drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
+          />
+        </svg>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            color: style.text,
+            fontWeight: 600,
+            fontSize: "14px",
+            lineHeight: "1.4",
+            textAlign: "center",
+            padding: "0 20px",
+            maxWidth: "180px",
+            wordWrap: "break-word",
+          }}
+        >
+          {data.label}
+        </div>
+      </div>
+    );
+  }
+
+  // Rectangle shape for actions (default)
+  return (
+    <div
+      style={{
+        background: style.bg,
+        border: `3px solid ${style.border}`,
+        borderRadius: "6px",
+        padding: "12px 16px",
+        minWidth: "160px",
+        maxWidth: "280px",
+        color: style.text,
+        fontWeight: 600,
+        fontSize: "14px",
+        lineHeight: "1.4",
+        textAlign: "center",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        wordWrap: "break-word",
+        position: "relative",
+      }}
+    >
+      <Handle type="target" position={Position.Top} style={{ background: '#555' }} />
+      <Handle type="source" position={Position.Bottom} style={{ background: '#555' }} />
+      <Handle type="target" position={Position.Left} style={{ background: '#555' }} />
+      <Handle type="source" position={Position.Right} style={{ background: '#555' }} />
+      {data.label}
+    </div>
+  );
+}
+
+const nodeTypes = {
+  custom: CustomNode,
+};
 
 export default function FlowDiagram() {
   const navigate = useNavigate();
-  const mermaidRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Zoom and Pan state - 100% = readable baseline
-  const [zoom, setZoom] = useState(100);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  // Define all nodes with increased spacing and perfect alignment
+  const initialNodes: Node[] = [
+    // Start
+    { id: "start", type: "custom", position: { x: 600, y: 60 }, data: { label: "User Lands on Phone Collection Page", nodeType: "entry", flowchartShape: "oval" } },
 
-  useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: "default",
-      themeVariables: {
-        primaryColor: "#3B82F6",
-        primaryTextColor: "#111827",
-        primaryBorderColor: "#60A5FA",
-        lineColor: "#6B7280",
-        secondaryColor: "#10B981",
-        tertiaryColor: "#F59E0B",
-        noteBkgColor: "#FEF3C7",
-        noteTextColor: "#92400E",
-        noteBorderColor: "#F59E0B",
-        fontSize: "18px",
-        fontFamily: "ui-sans-serif, system-ui, sans-serif",
-      },
-      flowchart: {
-        useMaxWidth: false,
-        htmlLabels: true,
-        curve: "basis",
-        padding: 40,
-        nodeSpacing: 100,
-        rankSpacing: 110,
-        wrappingWidth: 350,
-      },
-    });
+    // User decides to enter phone or skip
+    { id: "userChoice", type: "custom", position: { x: 600, y: 280 }, data: { label: "User Action", nodeType: "decision", flowchartShape: "diamond" } },
 
-    if (mermaidRef.current) {
-      mermaid.contentLoaded();
-    }
-  }, []);
+    // Main phone entry path
+    { id: "inputPhone", type: "custom", position: { x: 400, y: 500 }, data: { label: "User Enters Phone Number", nodeType: "normal", flowchartShape: "parallelogram" } },
 
-  const flowchartDefinition = `
-    flowchart TD
-      Start([User Lands on Phone Collection Page]):::entryNode
+    // Format validation
+    { id: "validateFormat", type: "custom", position: { x: 400, y: 700 }, data: { label: "Valid Format?", nodeType: "decision", flowchartShape: "diamond" } },
 
-      Start --> UserChoice{User Action}:::decisionNode
+    // Format error - retry entry
+    { id: "inlineError", type: "custom", position: { x: 150, y: 700 }, data: { label: "Show Error: Invalid Format", nodeType: "warning", flowchartShape: "rectangle" } },
 
-      UserChoice -->|Enter Phone Number| InputPhone[User Enters Phone Number]:::normalNode
-      UserChoice -->|Skip| FirstSkip[First Skip - Show Prompt]:::infoNode
+    // Submit to server
+    { id: "submitToServer", type: "custom", position: { x: 400, y: 900 }, data: { label: "Submit to Server", nodeType: "normal", flowchartShape: "rectangle" } },
 
-      InputPhone --> ValidateFormat{Valid Format?}:::decisionNode
+    // Validation result
+    { id: "validationResult", type: "custom", position: { x: 400, y: 1100 }, data: { label: "Validation Successful?", nodeType: "decision", flowchartShape: "diamond" } },
 
-      ValidateFormat -->|Yes| SubmitToServer[Submit to Server]:::normalNode
-      ValidateFormat -->|No| InlineError[Show error: Incorrect Phone, try again]:::warningNode
+    // Error - offer retry
+    { id: "retryOption", type: "custom", position: { x: 650, y: 1100 }, data: { label: "Show Error - Retry?", nodeType: "error", flowchartShape: "rectangle" } },
 
-      InlineError --> InputPhone
+    // Success
+    { id: "success", type: "custom", position: { x: 400, y: 1300 }, data: { label: "Phone Validated Successfully ✓", nodeType: "success", flowchartShape: "rectangle" } },
 
-      SubmitToServer --> ServerValidation{Server Validation}:::decisionNode
+    // Skip path - first skip
+    { id: "firstSkip", type: "custom", position: { x: 850, y: 500 }, data: { label: "Skip - Show Prompt", nodeType: "info", flowchartShape: "rectangle" } },
 
-      ServerValidation -->|Success| CheckExisting{Number Already Exists?}:::decisionNode
-      ServerValidation -->|Network Error| NetworkError[Show: Temporary Issue - Please Try Again]:::errorNode
-      ServerValidation -->|Timeout| TimeoutError[Show: Request Timed Out]:::errorNode
-      ServerValidation -->|500 Error| ServerError[Show: Server Error - Please Try Again]:::errorNode
+    // Second chance decision
+    { id: "secondChoice", type: "custom", position: { x: 850, y: 700 }, data: { label: "Skip Again or Enter?", nodeType: "decision", flowchartShape: "diamond" } },
 
-      CheckExisting -->|No - New Number| Success[Validation Success ✓]:::successNode
-      CheckExisting -->|Yes - Duplicate| Conflict[Show: Number Already Registered]:::warningNode
+    // Continue without phone
+    { id: "continueWithout", type: "custom", position: { x: 850, y: 900 }, data: { label: "Continue Without Phone", nodeType: "info", flowchartShape: "rectangle" } },
 
-      Conflict --> OfferLogin[Suggest: Login Instead?]:::normalNode
-      OfferLogin -->|User Clicks Login| RedirectLogin[Redirect to Login]:::normalNode
-      OfferLogin -->|User Retries| InputPhone
+    // Next page (convergence point)
+    { id: "nextPage", type: "custom", position: { x: 600, y: 1500 }, data: { label: "Proceed to Next Page", nodeType: "success", flowchartShape: "rectangle" } },
 
-      NetworkError --> RetryOption{User Action}:::decisionNode
-      TimeoutError --> RetryOption
-      ServerError --> RetryOption
+    // Activation complete
+    { id: "activation", type: "custom", position: { x: 600, y: 1700 }, data: { label: "User Activation Complete", nodeType: "success", flowchartShape: "oval" } },
+  ];
 
-      RetryOption -->|Retry| SubmitToServer
-      RetryOption -->|Cancel| Abort[User Aborts Process]:::errorNode
+  // Define simplified edges - only core flow connections
+  const initialEdges: Edge[] = [
+    // Main flow
+    { id: "e1", source: "start", target: "userChoice", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
 
-      Success --> NextPage[Proceed to Next Page]:::successNode
+    // User decision branches
+    { id: "e2", source: "userChoice", target: "inputPhone", label: "Enter Phone", type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e3", source: "userChoice", target: "firstSkip", label: "Skip", type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
 
-      FirstSkip --> SecondChoice{User Action on Prompt}:::decisionNode
-      SecondChoice -->|Enter Phone Number| InputPhone
-      SecondChoice -->|Skip Again| SecondSkip[Second Skip Detected]:::infoNode
+    // Phone validation path
+    { id: "e4", source: "inputPhone", target: "validateFormat", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e5", source: "validateFormat", target: "inlineError", label: "Invalid", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e6", source: "validateFormat", target: "submitToServer", label: "Valid", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e7", source: "inlineError", target: "inputPhone", animated: true, type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
 
-      SecondSkip --> ContinueWithout[Continue Onboarding Without Phone]:::infoNode
-      ContinueWithout --> NextPage
+    // Server validation
+    { id: "e8", source: "submitToServer", target: "validationResult", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e9", source: "validationResult", target: "success", label: "Success", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e10", source: "validationResult", target: "retryOption", label: "Error", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e11", source: "retryOption", target: "submitToServer", animated: true, type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e12", source: "success", target: "nextPage", type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
 
-      NextPage --> Activation([User Activation Complete]):::successNode
+    // Skip path
+    { id: "e13", source: "firstSkip", target: "secondChoice", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e14", source: "secondChoice", target: "inputPhone", label: "Enter", animated: true, type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e15", source: "secondChoice", target: "continueWithout", label: "Skip", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+    { id: "e16", source: "continueWithout", target: "nextPage", type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
 
-      Abort --> End([Session Ended]):::errorNode
-      RedirectLogin --> End
+    // Final step
+    { id: "e17", source: "nextPage", target: "activation", type: "straight", markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' }, style: { stroke: '#000000', strokeWidth: 3 } },
+  ];
 
-      classDef entryNode fill:#DBEAFE,stroke:#3B82F6,stroke-width:3px,color:#1E40AF,font-weight:600
-      classDef successNode fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46,font-weight:600
-      classDef errorNode fill:#FEE2E2,stroke:#EF4444,stroke-width:3px,color:#991B1B,font-weight:600
-      classDef warningNode fill:#FED7AA,stroke:#F59E0B,stroke-width:3px,color:#92400E,font-weight:600
-      classDef infoNode fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px,color:#1E40AF,font-weight:600
-      classDef normalNode fill:#F3F4F6,stroke:#9CA3AF,stroke-width:2px,color:#374151,font-weight:600
-      classDef decisionNode fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E,font-weight:600
-  `;
+  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
 
-  // Zoom handlers
-  const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 10, 200));
-  };
+  // Debug logging
+  console.log('=== FLOW DIAGRAM DEBUG ===');
+  console.log('Total nodes:', nodes.length);
+  console.log('Total edges:', edges.length);
+  console.log('First 3 edges:', edges.slice(0, 3));
 
-  const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 10, 50));
-  };
+  const nodeConnections = nodes.map(node => {
+    const incoming = edges.filter(e => e.target === node.id).length;
+    const outgoing = edges.filter(e => e.source === node.id).length;
+    return { id: node.id, incoming, outgoing, total: incoming + outgoing };
+  });
 
-  const handleResetZoom = () => {
-    setZoom(100);
-    setPan({ x: 0, y: 0 });
-  };
-
-  const handleFitToScreen = () => {
-    setZoom(100);
-    setPan({ x: 0, y: 0 });
-  };
-
-  // Pan/Drag handlers
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
-    setPan({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseLeave = () => {
-    setIsDragging(false);
-  };
+  const disconnected = nodeConnections.filter(nc => nc.total === 0);
+  console.log('Disconnected nodes:', disconnected.length > 0 ? disconnected : 'NONE - ALL CONNECTED ✓');
 
   return (
     <>
       <style>{`
-        /* Optimized Mermaid Diagram - 100% = Readable Baseline */
-        .mermaid {
-          display: flex !important;
-          justify-content: center !important;
-          align-items: flex-start !important;
-          -webkit-font-smoothing: antialiased !important;
-          -moz-osx-font-smoothing: grayscale !important;
-          text-rendering: optimizeLegibility !important;
+        /* FORCE ARROW VISIBILITY */
+        .react-flow__edge-path {
+          stroke: #000000 !important;
+          stroke-width: 3px !important;
         }
 
-        .mermaid svg {
-          max-width: none !important;
-          height: auto !important;
-          shape-rendering: geometricPrecision !important;
+        .react-flow__edge {
+          pointer-events: all !important;
         }
 
-        .mermaid .edgeLabel {
-          background-color: transparent !important;
-          padding: 6px 10px !important;
-          border-radius: 4px !important;
-          font-size: 16px !important;
-          font-weight: 600 !important;
-          color: #222222 !important;
-          box-shadow: none !important;
-          border: none !important;
-          text-shadow: 0 0 8px rgba(255, 255, 255, 0.9),
-                       0 0 4px rgba(255, 255, 255, 0.8) !important;
-          white-space: nowrap !important;
+        .react-flow__handle {
+          width: 8px !important;
+          height: 8px !important;
+          background: #555 !important;
+          border: 2px solid white !important;
         }
 
-        .mermaid .edgePath path {
-          stroke-width: 2.5px !important;
-          vector-effect: non-scaling-stroke !important;
+        marker {
+          overflow: visible !important;
         }
 
-        .mermaid .node rect,
-        .mermaid .node circle,
-        .mermaid .node polygon {
-          filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.12));
-          rx: 10px !important;
-          ry: 10px !important;
+        marker path {
+          fill: #000000 !important;
+          stroke: #000000 !important;
         }
 
-        .mermaid .label {
-          font-size: 18px !important;
-          font-weight: 600 !important;
-          color: #111827 !important;
-          -webkit-font-smoothing: antialiased !important;
-          white-space: normal !important;
-          word-wrap: break-word !important;
-          overflow-wrap: break-word !important;
+        .react-flow__arrowhead {
+          fill: #000000 !important;
         }
 
-        .mermaid .nodeLabel {
-          padding: 12px 16px !important;
-          line-height: 1.6 !important;
-          max-width: 350px !important;
+        .react-flow__arrowhead path {
+          fill: #000000 !important;
+          stroke: #000000 !important;
         }
 
-        .mermaid .cluster rect {
-          rx: 10px !important;
-          ry: 10px !important;
+        .react-flow__edge-text {
+          font-size: 12px;
+          font-weight: 700;
+          fill: #1F2937;
         }
 
-        /* Ensure nodes expand to fit text */
-        .mermaid .node {
-          min-width: fit-content !important;
+        .react-flow__edge-textbg {
+          fill: white;
+          fill-opacity: 0.9;
+        }
+
+        .react-flow__attribution {
+          display: none;
         }
       `}</style>
       <div className="min-h-screen bg-[#F9FAFB] p-6">
         <div className="max-w-[1600px] mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Guardio – Phone Number Collection Flow
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Complete user journey and validation states
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate("/")}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
-          </Button>
-        </div>
-
-        {/* Flow Diagram Card */}
-        <Card className="shadow-sm border-gray-200 relative">
-          {/* Zoom Controls - Fixed Top Right */}
-          <div className="absolute top-6 right-6 z-10 flex items-center gap-2 bg-white border border-gray-300 rounded-lg shadow-lg px-3 py-2">
-            <button
-              onClick={handleFitToScreen}
-              className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 transition-colors"
-              title="Fit to Screen"
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Guardio – Phone Number Collection Flow
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Complete user journey with {edges.length} connections between {nodes.length} steps
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/")}
+              className="gap-2"
             >
-              <Maximize2 className="w-4 h-4 text-gray-700" />
-            </button>
-            <div className="w-px h-6 bg-gray-300" />
-            <button
-              onClick={handleZoomOut}
-              disabled={zoom <= 50}
-              className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="Zoom Out"
-            >
-              <Minus className="w-4 h-4 text-gray-700" />
-            </button>
-            <button
-              onClick={handleResetZoom}
-              className="px-3 py-1 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded transition-colors"
-              title="Reset View"
-            >
-              {zoom}%
-            </button>
-            <button
-              onClick={handleZoomIn}
-              disabled={zoom >= 200}
-              className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="Zoom In"
-            >
-              <Plus className="w-4 h-4 text-gray-700" />
-            </button>
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Button>
           </div>
 
-          <CardHeader className="border-b border-gray-200 bg-gray-50">
-            <CardTitle className="text-xl font-semibold text-gray-900">
-              User Flow Diagram
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div
-              ref={containerRef}
-              className="bg-white rounded-lg overflow-hidden relative"
-              style={{
-                height: "calc(100vh - 280px)",
-                minHeight: "800px",
-                cursor: isDragging ? "grabbing" : "grab",
-              }}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
-            >
-              <div
-                style={{
-                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom / 100})`,
-                  transformOrigin: "top center",
-                  transition: isDragging ? "none" : "transform 0.2s ease-out",
-                  width: "100%",
-                  minHeight: "100%",
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "center",
-                  paddingTop: "30px",
-                }}
-              >
-                <div
-                  ref={mermaidRef}
-                  className="mermaid"
-                  style={{
-                    textAlign: "center",
-                    padding: "20px",
-                  }}
-                >
-                  {flowchartDefinition}
+          {/* Flow Diagram Legend */}
+          <Card className="shadow-sm border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-center gap-8 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-8 bg-blue-100 border-2 border-blue-500 rounded-full flex items-center justify-center text-xs font-semibold">Oval</div>
+                  <span className="text-gray-700">Start/End</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-8 bg-yellow-100 border-2 border-yellow-600" style={{ clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" }}></div>
+                  <span className="text-gray-700">Decision</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-8 bg-gray-100 border-2 border-gray-500 rounded flex items-center justify-center text-xs font-semibold">Box</div>
+                  <span className="text-gray-700">Action</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-8 bg-gray-100 border-2 border-gray-500" style={{ clipPath: "polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%)" }}></div>
+                  <span className="text-gray-700">Input</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    <div className="w-8 h-0.5 bg-black"></div>
+                    <div className="w-0 h-0 border-t-4 border-t-transparent border-l-8 border-l-black border-b-4 border-b-transparent"></div>
+                  </div>
+                  <span className="text-gray-700 font-bold">Connection Arrow</span>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Flow Diagram Card */}
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader className="border-b border-gray-200 bg-gray-50">
+              <CardTitle className="text-xl font-semibold text-gray-900">
+                User Flow Diagram - Core User Journey
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div style={{ height: "900px", width: "100%" }}>
+                <ReactFlow
+                  nodes={nodes}
+                  edges={edges}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  nodeTypes={nodeTypes}
+                  fitView
+                  fitViewOptions={{ padding: 0.2, minZoom: 0.4, maxZoom: 1.0 }}
+                  minZoom={0.3}
+                  maxZoom={1.5}
+                  nodesDraggable={false}
+                  nodesConnectable={false}
+                  elementsSelectable={false}
+                  panOnDrag={true}
+                  zoomOnScroll={true}
+                  zoomOnPinch={true}
+                  defaultEdgeOptions={{
+                    type: 'straight',
+                    animated: false,
+                    style: {
+                      stroke: '#000000',
+                      strokeWidth: 3,
+                    },
+                    markerEnd: {
+                      type: MarkerType.ArrowClosed,
+                      color: '#000000',
+                      width: 20,
+                      height: 20,
+                    },
+                  }}
+                >
+                  <Background color="#e5e7eb" gap={16} />
+                  <MiniMap
+                    nodeColor={(node) => {
+                      const nodeType = node.data.nodeType;
+                      const colorMap: Record<string, string> = {
+                        entry: "#3B82F6",
+                        success: "#10B981",
+                        error: "#EF4444",
+                        warning: "#F59E0B",
+                        info: "#3B82F6",
+                        normal: "#9CA3AF",
+                        decision: "#F59E0B",
+                        retry: "#2563EB",
+                        fallback: "#9333EA",
+                        uxFallback: "#16A34A",
+                      };
+                      return colorMap[nodeType as string] || "#9CA3AF";
+                    }}
+                    position="bottom-right"
+                  />
+                </ReactFlow>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>
