@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { RefreshCw, Workflow } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 
@@ -18,13 +17,13 @@ import { mockApi } from "../api/mockApi";
 import type { Alert, FunnelMetrics, TopError, RootCauseFactor, SegmentationData, LatencyDataPoint, LogEntry } from "../types/dashboard";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+  const [deletedAlertIds, setDeletedAlertIds] = useState<number[]>([]);
 
   const {
-    data: alerts = [],
+    data: alertsData = [],
     isLoading: alertsLoading,
     error: alertsError,
     refetch: refetchAlerts
@@ -34,6 +33,9 @@ export default function Dashboard() {
     refetchInterval: autoRefresh ? 30000 : false,
     retry: 2,
   });
+
+  // Filter out deleted alerts
+  const alerts = alertsData.filter(alert => !deletedAlertIds.includes(alert.id));
 
   const {
     data: metrics = [],
@@ -105,6 +107,14 @@ export default function Dashboard() {
     setSelectedAlert(alert);
   };
 
+  const handleAlertDelete = (alertId: number) => {
+    setDeletedAlertIds(prev => [...prev, alertId]);
+    // If the deleted alert is currently selected, close the drilldown panel
+    if (selectedAlert?.id === alertId) {
+      setSelectedAlert(null);
+    }
+  };
+
   const handleCloseDrilldown = () => {
     setSelectedAlert(null);
   };
@@ -131,7 +141,6 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Funnel Reliability Dashboard</h1>
-            <p className="text-gray-600 mt-1">Phone Collection Step Monitoring</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <div className="text-sm text-gray-500">
@@ -193,6 +202,7 @@ export default function Dashboard() {
               loading={alertsLoading}
               topErrors={topErrors}
               onAlertClick={handleAlertClick}
+              onAlertDelete={handleAlertDelete}
             />
           </div>
         </div>
@@ -208,19 +218,6 @@ export default function Dashboard() {
           alerts={alerts}
           lastUpdated={lastUpdated}
         />
-
-        {/* Flow Diagram Button */}
-        <div className="flex justify-center">
-          <Button
-            onClick={() => navigate('/flow-diagram')}
-            variant="outline"
-            size="lg"
-            className="gap-2 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-blue-500 transition-all shadow-sm"
-          >
-            <Workflow className="w-5 h-5 text-blue-600" />
-            <span className="font-semibold">View Flow Diagram</span>
-          </Button>
-        </div>
       </div>
 
       {/* Root Cause Drilldown Panel */}

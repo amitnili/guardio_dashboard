@@ -18,7 +18,7 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Maximize2, Minimize2, AlertCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   LineChart,
@@ -55,7 +55,6 @@ interface DataPoint {
 export default function TrendGraphs({ loading }: TrendGraphsProps) {
   // ============ STATE MANAGEMENT ============
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
-  const [expandedMetric, setExpandedMetric] = useState<number | null>(null);
 
   // ============ MOCK DATA GENERATION ============
   // Generate time-series data based on selected time range
@@ -67,17 +66,17 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
 
   // Data for each metric with time range support
   const abandonRateData = useMemo(() => generateTimeData(timeRange, (i, total) => {
-    const baseValue = 2.0;
-    const spike = i > total * 0.6 && i < total * 0.75 ? 1.2 : 0;
-    const alert = i === Math.floor(total * 0.65) ? "Abandon Spike Detected" : undefined;
+    const baseValue = 95.0; // High success rate baseline
+    const dip = i > total * 0.6 && i < total * 0.75 ? -3.5 : 0; // Dip in success rate (warning zone)
+    const alert = i === Math.floor(total * 0.65) ? "User Response Success Degradation" : undefined;
 
     return {
       time: timeRange === '1h' ? `${i * 5}m` :
             timeRange === '24h' ? `${i}:00` :
             timeRange === '7d' ? `Day ${i + 1}` :
             `Day ${i + 1}`,
-      value: baseValue + Math.random() * 0.5 + spike,
-      baseline: 2.0,
+      value: baseValue + Math.random() * 1.5 + dip,
+      baseline: 95.0, // Target success rate
       alert
     };
   }), [timeRange]);
@@ -133,16 +132,16 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
   const metrics = [
     {
       id: 0,
-      title: "Abandon Rate (Client)",
+      title: "User Response Success",
       current: abandonRateData[abandonRateData.length - 1]?.value || 0,
       unit: "%",
-      change: 0.8,
-      trend: "up" as const,
-      status: "critical" as const,
+      change: -2.5,
+      trend: "down" as const,
+      status: "warning" as const,
       data: abandonRateData,
-      color: "#EF4444",
-      thresholdValue: 2.0,
-      description: "Client-side abandonment with baseline comparison"
+      color: "#F97316",
+      thresholdValue: 95.0,
+      description: "Percentage of users who received a system response within 2 seconds"
     },
     {
       id: 1,
@@ -151,7 +150,7 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
       unit: "ms",
       change: 130,
       trend: "up" as const,
-      status: "critical" as const,
+      status: "warning" as const,
       data: serverResponseData,
       color: "#F97316",
       thresholdValue: 800,
@@ -169,7 +168,7 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
       status: "critical" as const,
       data: validationErrorData,
       color: "#EF4444",
-      description: "Error rate spike detected in the last hour – approximately 15% of validation requests failed"
+      description: "Percentage of phone validation requests that failed due to provider errors"
     },
     {
       id: 3,
@@ -240,7 +239,7 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
     };
 
     return (
-      <ResponsiveContainer width="100%" height={expandedMetric === metric.id ? 400 : 200}>
+      <ResponsiveContainer width="100%" height={200}>
         <LineChart data={metric.data} margin={{ top: 5, right: 5, left: 0, bottom: 25 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
           {/* UI FIX #2: Enhanced X-axis with rotation, intervals, and better spacing */}
@@ -256,7 +255,7 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
           <YAxis
             tick={{ fontSize: 11, fill: '#6B7280' }}
             stroke="#9CA3AF"
-            domain={metric.id === 3 ? [99, 100] : ['auto', 'auto']}
+            domain={metric.id === 0 ? [88, 100] : metric.id === 3 ? [99, 100] : ['auto', 'auto']}
           />
           <Tooltip content={<CustomTooltip />} />
 
@@ -335,7 +334,7 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
     };
 
     return (
-      <ResponsiveContainer width="100%" height={expandedMetric === metric.id ? 400 : 200}>
+      <ResponsiveContainer width="100%" height={200}>
         <AreaChart data={metric.data} margin={{ top: 5, right: 5, left: 0, bottom: 25 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
           {/* UI FIX #2: Enhanced X-axis matching line chart improvements */}
@@ -465,9 +464,8 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
       </CardHeader>
 
       <CardContent>
-        <div className={`grid gap-6 ${expandedMetric !== null ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
           {metrics
-            .filter(metric => expandedMetric === null || expandedMetric === metric.id)
             .map((metric) => (
               <div
                 key={metric.id}
@@ -476,21 +474,7 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
                 {/* METRIC HEADER */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-semibold text-gray-900">{metric.title}</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setExpandedMetric(expandedMetric === metric.id ? null : metric.id)}
-                        className="h-6 w-6 p-0"
-                      >
-                        {expandedMetric === metric.id ? (
-                          <Minimize2 className="w-3 h-3 text-gray-500" />
-                        ) : (
-                          <Maximize2 className="w-3 h-3 text-gray-500" />
-                        )}
-                      </Button>
-                    </div>
+                    <h4 className="text-sm font-semibold text-gray-900">{metric.title}</h4>
                     <p className="text-xs text-gray-500 mt-1">{metric.description}</p>
 
                     <div className="flex items-baseline gap-2 mt-2">
@@ -499,6 +483,7 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
                       </span>
                       <div className={`flex items-center gap-1 text-xs font-medium ${
                         metric.status === "critical" ? "text-red-600" :
+                        metric.status === "warning" ? "text-orange-600" :
                         metric.status === "healthy" ? "text-green-600" :
                         "text-gray-500"
                       }`}>
@@ -515,10 +500,12 @@ export default function TrendGraphs({ loading }: TrendGraphsProps) {
                     variant="outline"
                     className={`${
                       metric.status === "healthy" ? "bg-green-50 text-green-700 border-green-200" :
+                      metric.status === "warning" ? "bg-orange-50 text-orange-700 border-orange-200" :
                       "bg-red-50 text-red-700 border-red-200"
                     } border font-medium text-xs`}
                   >
-                    {metric.status === "healthy" ? "✓ Healthy" : "✗ Critical"}
+                    {metric.status === "healthy" ? "✓ Healthy" :
+                     metric.status === "warning" ? "⚠ Warning" : "✗ Critical"}
                   </Badge>
                 </div>
 

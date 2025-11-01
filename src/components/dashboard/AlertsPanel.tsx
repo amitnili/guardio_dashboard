@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, XCircle, Info, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, XCircle, Info, Clock, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import TopErrorsWidget from "./TopErrorsWidget";
@@ -11,9 +13,11 @@ interface AlertsPanelProps {
   loading: boolean;
   topErrors: TopError[];
   onAlertClick?: (alert: Alert) => void;
+  onAlertDelete?: (alertId: number) => void;
 }
 
-export default function AlertsPanel({ alerts, loading, topErrors, onAlertClick }: AlertsPanelProps) {
+export default function AlertsPanel({ alerts, loading, topErrors, onAlertClick, onAlertDelete }: AlertsPanelProps) {
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case "critical":
@@ -61,22 +65,22 @@ export default function AlertsPanel({ alerts, loading, topErrors, onAlertClick }
             <Skeleton className="h-6 w-32" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-12 w-full" />
+                <Skeleton key={i} className="h-24 w-full" />
               ))}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-gray-200 h-fit lg:sticky lg:top-6">
+        <Card className="shadow-sm border-gray-200">
           <CardHeader>
             <Skeleton className="h-6 w-32" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-24 w-full" />
+                <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
           </CardContent>
@@ -87,11 +91,8 @@ export default function AlertsPanel({ alerts, loading, topErrors, onAlertClick }
 
   return (
     <div className="space-y-4">
-      {/* Top Errors Widget */}
-      <TopErrorsWidget topErrors={topErrors} loading={loading} />
-
       {/* Alerts Panel */}
-      <Card className="shadow-sm border-gray-200 h-fit lg:sticky lg:top-6">
+      <Card className="shadow-sm border-gray-200">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-semibold text-gray-900">Real-time Alerts</CardTitle>
@@ -110,14 +111,16 @@ export default function AlertsPanel({ alerts, loading, topErrors, onAlertClick }
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
-                  onClick={() => onAlertClick && onAlertClick(alert)}
-                  className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${getSeverityColor(alert.severity)}`}
+                  className={`p-4 rounded-lg border-2 transition-all relative ${getSeverityColor(alert.severity)}`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 mt-0.5">
                       {getSeverityIcon(alert.severity)}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => onAlertClick && onAlertClick(alert)}
+                    >
                       <p className="text-sm font-medium text-gray-900 leading-tight">
                         {alert.message}
                       </p>
@@ -131,6 +134,46 @@ export default function AlertsPanel({ alerts, loading, topErrors, onAlertClick }
                         </div>
                       </div>
                     </div>
+                    <div className="flex-shrink-0">
+                      {deleteConfirmId === alert.id ? (
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="h-7 px-2 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onAlertDelete && onAlertDelete(alert.id);
+                              setDeleteConfirmId(null);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteConfirmId(null);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <button
+                          className="flex items-center justify-center h-7 w-7 rounded-md bg-gray-100 border border-red-300 hover:bg-red-50 transition-all shadow-sm text-red-600 hover:text-red-700 font-bold text-lg"
+                          title="Delete Alert"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirmId(alert.id);
+                          }}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -138,6 +181,9 @@ export default function AlertsPanel({ alerts, loading, topErrors, onAlertClick }
           )}
         </CardContent>
       </Card>
+
+      {/* Top Errors Widget */}
+      <TopErrorsWidget topErrors={topErrors} loading={loading} />
     </div>
   );
 }
