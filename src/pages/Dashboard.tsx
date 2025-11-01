@@ -35,7 +35,7 @@ export default function Dashboard() {
   });
 
   // Filter out deleted alerts
-  const alerts = alertsData.filter(alert => !deletedAlertIds.includes(alert.id));
+  const alerts = alertsData.filter(alert => alert.id !== undefined && !deletedAlertIds.includes(alert.id));
 
   const {
     data: metrics = [],

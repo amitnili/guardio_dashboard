@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, XCircle, Info, Clock, X } from "lucide-react";
+import { AlertTriangle, XCircle, Info, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import TopErrorsWidget from "./TopErrorsWidget";
@@ -143,7 +143,9 @@ export default function AlertsPanel({ alerts, loading, topErrors, onAlertClick, 
                             className="h-7 px-2 text-xs"
                             onClick={(e) => {
                               e.stopPropagation();
-                              onAlertDelete && onAlertDelete(alert.id);
+                              if (alert.id !== undefined) {
+                                onAlertDelete && onAlertDelete(alert.id);
+                              }
                               setDeleteConfirmId(null);
                             }}
                           >
@@ -167,7 +169,9 @@ export default function AlertsPanel({ alerts, loading, topErrors, onAlertClick, 
                           title="Delete Alert"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setDeleteConfirmId(alert.id);
+                            if (alert.id !== undefined) {
+                              setDeleteConfirmId(alert.id);
+                            }
                           }}
                         >
                           ×
