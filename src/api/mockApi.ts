@@ -1,4 +1,4 @@
-import { FunnelMetrics, Alert, TopError, RootCauseFactor, SegmentationData, LatencyDataPoint, LogEntry } from '../types/dashboard.js';
+import { FunnelMetrics, Alert, TopError, RootCauseFactor, SegmentationData, LatencyDataPoint, LogEntry, DailyConversionData } from '../types/dashboard.js';
 
 // Mock data generator
 export const mockApi = {
@@ -87,7 +87,7 @@ export const mockApi = {
     return [
       {
         id: 1,
-        message: "Phone validation is failing for about 15% of users (critical)",
+        message: "Phone Validation Error Increase (15%)",
         severity: "critical",
         timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
         related_layer: "provider",
@@ -95,7 +95,7 @@ export const mockApi = {
       },
       {
         id: 2,
-        message: "Spike detected in Abandon Rate (+1.2% vs baseline)",
+        message: "Abandon Rate Spike (+1.2% vs Baseline)",
         severity: "critical",
         timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
         related_layer: "client",
@@ -103,7 +103,7 @@ export const mockApi = {
       },
       {
         id: 3,
-        message: "Server response time exceeded SLA (1.05s > 0.8s)",
+        message: "Server Response Time Breach (1.05s vs 0.8s Target)",
         severity: "critical",
         timestamp: new Date(Date.now() - 23 * 60 * 1000).toISOString(),
         related_layer: "server",
@@ -111,7 +111,7 @@ export const mockApi = {
       },
       {
         id: 4,
-        message: "Event completeness below threshold (99.2% < 99.5%)",
+        message: "Event Completeness Below Threshold (98.2% < 99.5%)",
         severity: "warning",
         timestamp: new Date(Date.now() - 67 * 60 * 1000).toISOString(),
         related_layer: "data_quality",
@@ -125,6 +125,13 @@ export const mockApi = {
 
     return [
       {
+        message: "Phone Validation API errors",
+        count: 67,
+        layer: "provider",
+        severity: "critical",
+        lastOccurrence: new Date(Date.now() - 3 * 60 * 1000).toISOString()
+      },
+      {
         message: "Server response time exceeded SLA",
         count: 47,
         layer: "server",
@@ -137,13 +144,6 @@ export const mockApi = {
         layer: "client",
         severity: "critical",
         lastOccurrence: new Date(Date.now() - 12 * 60 * 1000).toISOString()
-      },
-      {
-        message: "Phone Validation API errors (~15%)",
-        count: 67,
-        layer: "provider",
-        severity: "critical",
-        lastOccurrence: new Date(Date.now() - 3 * 60 * 1000).toISOString()
       },
       {
         message: "Event completeness degraded",
@@ -393,5 +393,33 @@ export const mockApi = {
     ];
 
     return logs;
+  },
+
+  getDailyConversionHistory: async (stage: string): Promise<DailyConversionData[]> => {
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    // Base conversion rates for each stage with some variance
+    const baseRates: Record<string, number> = {
+      'Population': 100,
+      'Next Page': 82,
+      'Phone Collected': 75.6,
+      'Activation': 5.1
+    };
+
+    const baseRate = baseRates[stage] || 50;
+
+    return days.map((day, index) => {
+      // Add realistic variance to the conversion rate
+      const variance = (Math.random() - 0.5) * 6; // ±3% variance
+      const conversionRate = Math.max(0, Math.min(100, baseRate + variance));
+
+      return {
+        day,
+        conversionRate: Number(conversionRate.toFixed(1)),
+        date: new Date(Date.now() - (6 - index) * 24 * 60 * 60 * 1000).toISOString()
+      };
+    });
   }
 };

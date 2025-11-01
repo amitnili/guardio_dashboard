@@ -20,7 +20,7 @@ export default function ReliabilityMetrics({ data, loading }: ReliabilityMetrics
     const tooltips: Record<string, string> = {
       "Client": "Percentage of users who received a system response within 2 seconds.",
       "Server": "Percentage of backend phone validation requests successfully processed, including retries.",
-      "Provider": "In the last hour, ~15% of phone validation API requests failed due to provider instability.",
+      "Provider": "Percentage of phone validation API requests that failed due to provider errors or unavailability.",
       "Data Quality": "Percentage of tracking events successfully recorded without delay or duplication."
     };
     return tooltips[layer] || "";

@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { FunnelStage } from "@/types/dashboard";
+import { useQuery } from "@tanstack/react-query";
+import type { FunnelStage, DailyConversionData } from "@/types/dashboard";
 import { getFallbackFunnelData } from "@/utils/dashboardData";
+import { mockApi } from "@/api/mockApi";
+import FunnelDrilldown from "./FunnelDrilldown";
 
 interface FunnelOverviewProps {
   data?: FunnelStage[];
@@ -12,6 +15,23 @@ interface FunnelOverviewProps {
 
 export default function FunnelOverview({ data, loading }: FunnelOverviewProps) {
   const funnelData = data && data.length > 0 ? data : getFallbackFunnelData();
+  const [selectedStage, setSelectedStage] = useState<string | null>(null);
+
+  // Fetch daily conversion data when a stage is selected
+  const { data: dailyData, isLoading: dailyLoading } = useQuery<DailyConversionData[]>({
+    queryKey: ['dailyConversion', selectedStage],
+    queryFn: () => mockApi.getDailyConversionHistory(selectedStage || ''),
+    enabled: !!selectedStage,
+    retry: 1,
+  });
+
+  const handleStageClick = (stage: string) => {
+    setSelectedStage(selectedStage === stage ? null : stage);
+  };
+
+  const handleCloseDrilldown = () => {
+    setSelectedStage(null);
+  };
 
   if (loading) {
     return (
@@ -38,7 +58,12 @@ export default function FunnelOverview({ data, loading }: FunnelOverviewProps) {
               <React.Fragment key={stage.stage}>
                 <div className="flex-1 min-w-0">
                   <div
-                    className={`${stage.color} rounded-lg p-4 sm:p-6 text-white relative overflow-hidden transition-transform hover:scale-105`}
+                    onClick={() => handleStageClick(stage.stage)}
+                    className={`${stage.color} rounded-lg p-4 sm:p-6 text-white relative overflow-hidden transition-all cursor-pointer ${
+                      selectedStage === stage.stage
+                        ? 'scale-105 ring-4 ring-white shadow-xl'
+                        : 'hover:scale-105 hover:shadow-lg'
+                    }`}
                   >
                     <div className="relative z-10">
                       <div className="text-sm font-medium opacity-90">{stage.stage}</div>
@@ -80,6 +105,16 @@ export default function FunnelOverview({ data, loading }: FunnelOverviewProps) {
               </React.Fragment>
             ))}
           </div>
+
+          {/* Drilldown Chart */}
+          {selectedStage && dailyData && !dailyLoading && (
+            <FunnelDrilldown
+              stage={selectedStage}
+              data={dailyData}
+              color={funnelData.find(s => s.stage === selectedStage)?.color || 'bg-blue-500'}
+              onClose={handleCloseDrilldown}
+            />
+          )}
         </div>
       </CardContent>
     </Card>

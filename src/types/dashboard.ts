@@ -87,3 +87,9 @@ export interface TopError {
   severity: 'critical' | 'warning' | 'info';
   lastOccurrence: string;
 }
+
+export interface DailyConversionData {
+  day: string;
+  conversionRate: number;
+  date: string;
+}

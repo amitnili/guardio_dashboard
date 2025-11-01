@@ -16,7 +16,7 @@ export const transformFunnelData = (metrics: FunnelMetrics[]): FunnelStage[] => 
   };
 
   const stageNames = {
-    visitors: 'Visitors',
+    visitors: 'Population',
     next_page: 'Next Page',
     phone_collected: 'Phone Collected',
     activation: 'Activation'
@@ -60,7 +60,7 @@ const formatLayerName = (layer: string): string => {
 };
 
 export const getFallbackFunnelData = (): FunnelStage[] => [
-  { stage: "Visitors", count: 10000, conversion: 100, dropOff: 0, delta: 0, color: "bg-blue-500" },
+  { stage: "Population", count: 10000, conversion: 100, dropOff: 0, delta: 0, color: "bg-blue-500" },
   { stage: "Next Page", count: 7500, conversion: 75, dropOff: 25, delta: -2.3, color: "bg-indigo-500" },
   { stage: "Phone Collected", count: 5400, conversion: 72, dropOff: 28, delta: -3.8, color: "bg-purple-500" },
   { stage: "Activation", count: 4860, conversion: 90, dropOff: 10, delta: 1.2, color: "bg-violet-500" },

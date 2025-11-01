@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -37,6 +37,7 @@ interface BusinessImpactLayerProps {
 
 export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // ============ ACTIVATION IMPACT SUMMARY ============
   // Aligned with actual funnel data: 96 activations
@@ -87,7 +88,7 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
         startIndex: Math.floor(count * 0.85),
         endIndex: count,
         activationsLost: timeRange === '1h' ? 9 : timeRange === '24h' ? 3 : timeRange === '7d' ? 21 : 90,
-        priority: 'P0'
+        priority: 'P1'
       },
       {
         id: 'incident-3',
@@ -269,14 +270,24 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
       <CardContent className="space-y-6">
         {/* ACTIVATION IMPACT SUMMARY CARD */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className={`rounded-lg p-5 border-2 ${
-            activationImpact.status === 'critical' ? 'bg-red-50 border-red-200' :
-            activationImpact.status === 'warning' ? 'bg-orange-50 border-orange-200' :
-            'bg-green-50 border-green-200'
-          }`}>
+          <div
+            className={`rounded-lg p-5 border-2 cursor-pointer transition-all hover:shadow-md ${
+              activationImpact.status === 'critical' ? 'bg-red-50 border-red-200 hover:border-red-300' :
+              activationImpact.status === 'warning' ? 'bg-orange-50 border-orange-200 hover:border-orange-300' :
+              'bg-green-50 border-green-200 hover:border-green-300'
+            }`}
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
             <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">Activation Impact Summary</h3>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-gray-900">Activation Impact Summary</h3>
+                  {isExpanded ? (
+                    <ChevronUp className="w-4 h-4 text-gray-600" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-600" />
+                  )}
+                </div>
                 <p className="text-xs text-gray-600 mt-1">
                   Impact of reliability issues on user activations ({timeRange})
                 </p>
@@ -335,7 +346,9 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
           </div>
         </div>
 
-        {/* ACTIVATIONS OVER TIME CHART */}
+        {/* ACTIVATIONS OVER TIME CHART - Only show when expanded */}
+        {isExpanded && (
+        <>
         <div className="bg-gray-50 rounded-lg p-5 border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -456,7 +469,6 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
 
         </div>
 
-        {/* INCIDENT IMPACT RANGE TABLE */}
         <div className="bg-white rounded-lg border border-gray-200">
           <div className="p-4 border-b border-gray-200">
             <h3 className="text-sm font-semibold text-gray-900">Incident Impact Range</h3>
@@ -512,8 +524,9 @@ export default function BusinessImpactLayer({ loading }: BusinessImpactLayerProp
             </TableBody>
           </Table>
         </div>
+        </>
+        )}
       </CardContent>
     </Card>
-    // ========== END: BUSINESS IMPACT LAYER SECTION ==========
   );
 }
