@@ -266,13 +266,13 @@ export default function FlowDiagram() {
   console.log('Total edges:', edges.length);
   console.log('First 3 edges:', edges.slice(0, 3));
 
-  const nodeConnections = nodes.map(node => {
-    const incoming = edges.filter(e => e.target === node.id).length;
-    const outgoing = edges.filter(e => e.source === node.id).length;
+  const nodeConnections = nodes.map((node: Node) => {
+    const incoming = edges.filter((e: Edge) => e.target === node.id).length;
+    const outgoing = edges.filter((e: Edge) => e.source === node.id).length;
     return { id: node.id, incoming, outgoing, total: incoming + outgoing };
   });
 
-  const disconnected = nodeConnections.filter(nc => nc.total === 0);
+  const disconnected = nodeConnections.filter((nc: { id: string; incoming: number; outgoing: number; total: number }) => nc.total === 0);
   console.log('Disconnected nodes:', disconnected.length > 0 ? disconnected : 'NONE - ALL CONNECTED ✓');
 
   return (
@@ -423,7 +423,7 @@ export default function FlowDiagram() {
                 >
                   <Background color="#e5e7eb" gap={16} />
                   <MiniMap
-                    nodeColor={(node) => {
+                    nodeColor={(node: Node) => {
                       const nodeType = node.data.nodeType;
                       const colorMap: Record<string, string> = {
                         entry: "#3B82F6",
